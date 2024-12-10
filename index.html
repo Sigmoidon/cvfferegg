@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Палестинский ребенок уворачивается от ракет ЦАХАЛа</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+<script>
+let circlePos;
+let circleRadius = 30;
+let circleSpeed = 15;
+let obstacles = [];
+let heal;
+let barWidth = 700;
+let barHeight = 50;
+
+function setup() {
+    createCanvas(1960, 1080);
+    circlePos = createVector(width / 2, height / 2);
+    for (let i = 0; i < 20; i++) {
+        obstacles.push(new Obstacle());
+    }
+    heal = new Heal();
+}
+
+function draw() {
+    background(0);
+    
+    // Рисуем полосу здоровья вверху, выровненную по центру
+    fill(255, 0, 0); // Цвет заполнения (красный)
+    rect(width / 2 - barWidth / 2 - 200, 0, barWidth, barHeight);
+    
+    // Рисуем обводку для полосы здоровья (белый цвет)
+    noFill();
+    stroke(255); // Цвет обводки (белый)
+    strokeWeight(4);
+    rect(width / 2 - barWidth / 2 - 200, 0, barWidth, barHeight);
+    
+    // Рисуем круг
+    fill(0, 0, 255); // Цвет круга (синий)
+    ellipse(circlePos.x, circlePos.y, circleRadius * 2);
+
+    // Двигаем препятствия
+    for (let obstacle of obstacles) {
+        obstacle.move();
+        obstacle.show();
+        if (obstacle.hits(circlePos)) {
+            barWidth -= 10;
+            if (barWidth <= 0) {
+                noLoop(); // Останавливаем игру
+                alert("Game Over!");
+            }
+        }
+    }
+
+    // Двигаем и рисуем предмет исцеления
+    heal.move();
+    heal.show();
+    if (heal.hits(circlePos)) {
+        barWidth += 10;
+        if (barWidth > 700) {
+            barWidth = 700; // Максимальная ширина
+        }
+    }
+
+    // Управление движением круга
+    if (keyIsDown(87)) { // W
+        circlePos.y -= circleSpeed;
+    }
+    if (keyIsDown(83)) { // S
+        circlePos.y += circleSpeed;
+    }
+    if (keyIsDown(65)) { // A
+        circlePos.x -= circleSpeed;
+    }
+    if (keyIsDown(68)) { // D
+        circlePos.x += circleSpeed;
+    }
+
+    // Ограничиваем движение круга в пределах экрана
+    circlePos.x = constrain(circlePos.x, circleRadius, width - circleRadius);
+    circlePos.y = constrain(circlePos.y, circleRadius, height - circleRadius);
+}
+
+class Heal {
+    constructor() {
+        this.width = random(50, 100);
+        this.height = random(50, 100);
+        this.x = random(width - this.width);
+        this.y = random(-height, 0);
+    }
+
+    show() {
+        fill(255); // Цвет предмета исцеления (желтый)
+        rect(this.x, this.y, this.width, this.height);
+    }
+
+    move() {
+        this.y += 10;
+        if (this.y > height) {
+            this.reset();
+        }
+    }
+
+    reset() {
+        this.y = random(-height, -this.height);
+        this.x = random(width - this.width);
+    }
+
+    hits(circlePos) {
+        return (
+            circlePos.x + circleRadius > this.x &&
+            circlePos.x - circleRadius < this.x + this.width &&
+            circlePos.y + circleRadius > this.y &&
+            circlePos.y - circleRadius < this.y + this.height
+        );
+    }
+}
+
+class Obstacle {
+    constructor() {
+        this.width = random(50, 100);
+        this.height = random(50, 100);
+        this.x = random(width - this.width);
+        this.y = random(-height, 0);
+    }
+
+    show() {
+        fill(255); // Цвет препятствий (белый)
+        rect(this.x, this.y, this.width, this.height);
+    }
+
+    move() {
+        this.y += 10;
+        if (this.y > height) {
+            this.reset();
+        }
+    }
+
+    reset() {
+        this.y = random(-height, -this.height);
+        this.x = random(width - this.width);
+    }
+
+    hits(circlePos) {
+        return (
+            circlePos.x + circleRadius > this.x &&
+            circlePos.x - circleRadius < this.x + this.width &&
+            circlePos.y + circleRadius > this.y &&
+            circlePos.y - circleRadius < this.y + this.height
+        );
+    }
+}
+</script>
+
+</body>
+</html>
